@@ -342,6 +342,16 @@ def keystone_def(tree, key):
     return did
 
 
+def with_resolvable_type(d):
+    """Skill Tree writes its live descriptions as {"skill_definition_id": id} with no "type", which the text codec
+    reads as an empty component: the descriptions never showed. With the type they resolve on the client."""
+    desc = d.get("description")
+    if isinstance(desc, dict) and "skill_definition_id" in desc and "type" not in desc:
+        d = dict(d)
+        d["description"] = {"type": "skill_tree_rpgs:resolvable", **desc}
+    return d
+
+
 def class_cores(tree):
     """Skill Tree's class tab, carried over in place. Returns {class: outermost spine skill id}."""
     with jar("skill_tree-fabric-*.jar") as z:
@@ -349,7 +359,7 @@ def class_cores(tree):
         skills, defs, conns = (read_json(z, base + f) for f in ("skills.json", "definitions.json", "connections.json"))
     for did, d in defs.items():
         d = {k: v for k, v in d.items() if k != "metadata"}
-        tree.define("c_" + did, d)
+        tree.define("c_" + did, with_resolvable_type(d))
     angles = {}
     for sid, s in skills.items():
         tree.add("c_" + sid, s["x"], s["y"], "c_" + s["definition"], root=s.get("root", False))
@@ -468,14 +478,14 @@ def build():
                 raise SystemExit(f"Skill Tree weapon tab has no {wroot}")
             used_weapons.add(wroot)
             side = -1 if q == 0 else 1
-            tree.define("w_" + wroot, {k: v for k, v in wdefs[wroot].items() if k != "metadata"})
+            tree.define("w_" + wroot, with_resolvable_type({k: v for k, v in wdefs[wroot].items() if k != "metadata"}))
             rx, ry = polar(600, mid + side * 6)
             wr = tree.add("w_" + wroot, rx, ry, "w_" + wroot)
             inner = min(rings[0], key=lambda t: abs(t[1] - (mid + side * 6)))
             tree.link(wr, inner[0])
             kids = []
             for c, child in enumerate(sorted(wparts[wroot])):
-                tree.define("w_" + child, {k: v for k, v in wdefs[child].items() if k != "metadata"})
+                tree.define("w_" + child, with_resolvable_type({k: v for k, v in wdefs[child].items() if k != "metadata"}))
                 cx, cy = polar(525, mid + side * (3 + 6 * c))
                 kids.append(tree.add("w_" + child, cx, cy, "w_" + child))
                 tree.link(wr, kids[-1])
