@@ -20,6 +20,7 @@ public class SkillForest implements ModInitializer {
         SkillHelper.RESET_CATEGORIES.add(CATEGORY);
         ServerLivingEntityEvents.AFTER_DAMAGE.register(SkillForest::lifeweaver);
         ClassBooks.register();
+        TableBook.register();
     }
 
     /**

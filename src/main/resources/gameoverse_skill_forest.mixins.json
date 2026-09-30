@@ -6,7 +6,9 @@
   "mixins": [
     "ApothicEventsMixin",
     "BetterCombatMixin",
-    "LivingEntityMixin"
+    "LivingEntityMixin",
+    "ServerPlayerMixin",
+    "SpellBindingScreenHandlerMixin"
   ],
   "injectors": {
     "defaultRequire": 1

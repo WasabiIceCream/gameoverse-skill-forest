@@ -22,8 +22,18 @@ dependencies {
         "reference-jars/bettercombat-fabric-3.2.2+26.1.2.jar",
         "reference-jars/spell_power-fabric-1.6.2+26.1.2.jar",
         "reference-jars/skill_tree-fabric-1.6.1+26.1.2.jar",
-        "reference-jars/spell_engine-fabric-1.10.9+26.1.2.jar"
+        "reference-jars/spell_engine-fabric-1.10.9+26.1.2.jar",
+        "reference-jars/penchant-0.5.6+mc26.1.2.jar",
+        "reference-jars/trinkets-4.0.1+26.1.jar"
     ))
+
+    testImplementation(platform("org.junit:junit-bom:5.11.4"))
+    testImplementation("org.junit.jupiter:junit-jupiter")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+}
+
+tasks.test {
+    useJUnitPlatform()
 }
 
 java {

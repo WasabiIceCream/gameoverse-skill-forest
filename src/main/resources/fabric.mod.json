@@ -3,7 +3,7 @@
   "id": "gameoverse_skill_forest",
   "version": "${version}",
   "name": "Gameoverse Skill Forest",
-  "description": "Code for the Skill Forest (a Pufferfish's Skills tab from the gameoverse_skill_forest datapack): the rule-changing keystones (Deadeye, Spellblade, Bloodthirst, Lifeweaver, Duelist) and the Orb of Oblivion resetting the forest.",
+  "description": "Code for the Skill Forest (a Pufferfish's Skills tab from the gameoverse_skill_forest datapack): the rule-changing keystones (Deadeye, Spellblade, Bloodthirst, Lifeweaver, Duelist) and the Orb of Oblivion resetting the forest. Also measures the Spell Binding Table's library the way Penchant measures the enchanting table's (books around it, 3 per shelf) when Penchant is installed, and makes the table use the equipped spell book (moved in from the Trinkets spell book slot when it opens, back when it closes).",
   "authors": [
     "WasabiIceCream"
   ],
@@ -28,6 +28,10 @@
     "gameoverse_attribute_bridge": ">=1.1.0",
     "bettercombat": "*",
     "spell_power": "*",
-    "spell_engine": "*"
+    "spell_engine": "*",
+    "trinkets": "*"
+  },
+  "suggests": {
+    "penchant": "*"
   }
 }
