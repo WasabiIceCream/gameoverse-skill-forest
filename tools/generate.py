@@ -352,13 +352,39 @@ def with_resolvable_type(d):
     return d
 
 
+# The class's spell book, given once when its start is unlocked (the forest start is the class choice; the Spell Binding
+# Table stays the place to bind spells into it). Pufferfish's plain "command" runs only on a real unlock action, never on
+# login or reload; an Orb reset doesn't take the book back (books cost 1 level at the table anyway).
+CLASS_BOOKS = {
+    "fire": "wizards:spell_book/fire", "frost": "wizards:spell_book/frost", "arcane": "wizards:spell_book/arcane",
+    "priest": "paladins:spell_book/priest", "paladin": "paladins:spell_book/paladin",
+    "warrior": "rogues:spell_book/warrior", "rogue": "rogues:spell_book/rogue", "archer": "archers:spell_book/archer",
+}
+
+
+def book_item_exists(item_id):
+    ns, path = item_id.split(":", 1)
+    with jar(ns + "-fabric-*.jar") as z:
+        return ("assets/%s/items/%s.json" % (ns, path)) in z.namelist()
+
+
+def class_book_reward(root_definition):
+    cls = root_definition.split("_")[0]
+    if cls not in CLASS_BOOKS:
+        raise SystemExit(f"No spell book for class root {root_definition}")
+    return {"type": "puffish_skills:command", "data": {"command": "give @s " + CLASS_BOOKS[cls]}}
+
+
 def class_cores(tree):
     """Skill Tree's class tab, carried over in place. Returns {class: outermost spine skill id}."""
     with jar("skill_tree-fabric-*.jar") as z:
         base = "data/skill_tree_rpgs/puffish_skills/categories/class_skills/"
         skills, defs, conns = (read_json(z, base + f) for f in ("skills.json", "definitions.json", "connections.json"))
+    roots = {s["definition"] for s in skills.values() if s.get("root")}
     for did, d in defs.items():
         d = {k: v for k, v in d.items() if k != "metadata"}
+        if did in roots:
+            d = dict(d, rewards=list(d.get("rewards", [])) + [class_book_reward(did)])
         tree.define("c_" + did, with_resolvable_type(d))
     angles = {}
     for sid, s in skills.items():
@@ -598,6 +624,10 @@ def validate(tree, attrs, spells):
                     for sp in c["spell_ids"]:
                         if sp not in spells:
                             raise SystemExit(f"{did}: unknown spell {sp}")
+            elif t == "puffish_skills:command":
+                cmd = data.get("command", "")
+                if not cmd.startswith("give @s ") or not book_item_exists(cmd.split()[-1]):
+                    raise SystemExit(f"{did}: bad command reward {cmd!r}")
             elif t not in ("puffish_skills:tag",):
                 raise SystemExit(f"{did}: unexpected reward type {t}")
     # every skill reachable from a root through normal links
