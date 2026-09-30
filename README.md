@@ -14,7 +14,8 @@ Design and decisions: `docs/skill-forest-design.md` (server repo). Player-facing
 - The Fabric mod (`src/`, server-only) holds the keystones that change rules (Deadeye, Spellblade, Bloodthirst,
   Lifeweaver, Duelist; checked by entity tags the tab grants) and adds the forest to the Orb of Oblivion's resets.
 - Skill Tree (All Rights Reserved) stays installed for its reward types, spells and effects; the generator reads its
-  data from the jar at build time and nothing of it is committed here apart from the generated datapack.
+  data from the installed jar at build time. The generated `datapack/` contains that data, so it isn't tracked here:
+  run the generator to build it.
 
 Needs: Pufferfish's Skills, Skill Tree, Apothic Attributes (Fabric port) 3.0.1-fabric.5+, gameoverse-attribute-bridge
 1.1.0+, Better Combat, Spell Power, Pufferfish's Attributes. Keep the tab on Dynamic Difficulty's
