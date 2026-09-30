@@ -21,7 +21,8 @@ dependencies {
         "reference-jars/gameoverse-attribute-bridge-1.1.0.jar",
         "reference-jars/bettercombat-fabric-3.2.2+26.1.2.jar",
         "reference-jars/spell_power-fabric-1.6.2+26.1.2.jar",
-        "reference-jars/skill_tree-fabric-1.6.1+26.1.2.jar"
+        "reference-jars/skill_tree-fabric-1.6.1+26.1.2.jar",
+        "reference-jars/spell_engine-fabric-1.10.9+26.1.2.jar"
     ))
 }
 

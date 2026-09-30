@@ -352,7 +352,8 @@ def with_resolvable_type(d):
     return d
 
 
-# The class's spell book, given once when its start is unlocked (the forest start is the class choice; the Spell Binding
+# The class's spell pool tag; its book (a spell_engine:spell_book built from the tag, as the Spell Binding Table does, by
+# the mod's /gameoverse_forest class_book command) is given once when its start is unlocked (the forest start is the class choice; the Spell Binding
 # Table stays the place to bind spells into it). Pufferfish's plain "command" runs only on a real unlock action, never on
 # login or reload; an Orb reset doesn't take the book back (books cost 1 level at the table anyway).
 CLASS_BOOKS = {
@@ -362,17 +363,18 @@ CLASS_BOOKS = {
 }
 
 
-def book_item_exists(item_id):
-    ns, path = item_id.split(":", 1)
+def book_pool_exists(pool):
+    """The class's spell tag, which the Spell Binding Table (and our command) turns into its book."""
+    ns, path = pool.split(":", 1)
     with jar(ns + "-fabric-*.jar") as z:
-        return ("assets/%s/items/%s.json" % (ns, path)) in z.namelist()
+        return ("data/%s/tags/spell/%s.json" % (ns, path)) in z.namelist()
 
 
 def class_book_reward(root_definition):
     cls = root_definition.split("_")[0]
     if cls not in CLASS_BOOKS:
         raise SystemExit(f"No spell book for class root {root_definition}")
-    return {"type": "puffish_skills:command", "data": {"command": "give @s " + CLASS_BOOKS[cls]}}
+    return {"type": "puffish_skills:command", "data": {"command": "gameoverse_forest class_book " + CLASS_BOOKS[cls]}}
 
 
 def class_cores(tree):
@@ -626,7 +628,7 @@ def validate(tree, attrs, spells):
                             raise SystemExit(f"{did}: unknown spell {sp}")
             elif t == "puffish_skills:command":
                 cmd = data.get("command", "")
-                if not cmd.startswith("give @s ") or not book_item_exists(cmd.split()[-1]):
+                if not cmd.startswith("gameoverse_forest class_book ") or not book_pool_exists(cmd.split()[-1]):
                     raise SystemExit(f"{did}: bad command reward {cmd!r}")
             elif t not in ("puffish_skills:tag",):
                 raise SystemExit(f"{did}: unexpected reward type {t}")

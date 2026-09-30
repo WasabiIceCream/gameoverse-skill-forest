@@ -2,15 +2,12 @@
   "schemaVersion": 1,
   "id": "gameoverse_skill_forest",
   "version": "${version}",
-
   "name": "Gameoverse Skill Forest",
   "description": "Code for the Skill Forest (a Pufferfish's Skills tab from the gameoverse_skill_forest datapack): the rule-changing keystones (Deadeye, Spellblade, Bloodthirst, Lifeweaver, Duelist) and the Orb of Oblivion resetting the forest.",
   "authors": [
     "WasabiIceCream"
   ],
-
   "license": "MIT",
-
   "environment": "server",
   "entrypoints": {
     "main": [
@@ -30,6 +27,7 @@
     "apothic_attributes": ">=3.0.1-fabric.5",
     "gameoverse_attribute_bridge": ">=1.1.0",
     "bettercombat": "*",
-    "spell_power": "*"
+    "spell_power": "*",
+    "spell_engine": "*"
   }
 }

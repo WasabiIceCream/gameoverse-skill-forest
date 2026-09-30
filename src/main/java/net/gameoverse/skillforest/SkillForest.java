@@ -19,6 +19,7 @@ public class SkillForest implements ModInitializer {
         // The Orb of Oblivion resets these categories (Skill Tree's own two are turned off by the datapack).
         SkillHelper.RESET_CATEGORIES.add(CATEGORY);
         ServerLivingEntityEvents.AFTER_DAMAGE.register(SkillForest::lifeweaver);
+        ClassBooks.register();
     }
 
     /**
