@@ -78,6 +78,13 @@ def known_attributes():
                                 if path and not path.endswith(("desc", "description", "tooltip")):
                                     ids.add(f"{ns}:{path}")
                                 break
+    # Mana Attributes registers under "manaattributes:" but its lang keys carry no namespace (attribute.name.max_mana).
+    with jar("mana-attributes-*.jar") as z:
+        for n in z.namelist():
+            if n.endswith("lang/en_us.json"):
+                for key in read_json(z, n):
+                    if key.startswith("attribute.name.") and key.count(".") == 2:
+                        ids.add("manaattributes:" + key.split(".")[2])
     return ids
 
 
@@ -110,6 +117,8 @@ STATS = {
     "spell_frost": ("spell_power:frost", MB, 0.02, 0.06, "pct", "Frost Spell Power", "minecraft:snowball"),
     "spell_all": ("spell_power:generic", MB, 0.01, 0.03, "pct", "Spell Power", "minecraft:lapis_lazuli"),
     "spell_haste": ("spell_power:haste", MB, 0.01, 0.04, "pct", "Spell Haste", "minecraft:glowstone_dust"),
+    "max_mana": ("manaattributes:max_mana", ADD, 5, 20, "flat", "Max Mana", "minecraft:prismarine_crystals"),
+    "mana_regen": ("manaattributes:mana_regeneration", ADD, 0.25, 1, "flat", "Mana Regeneration", "minecraft:glow_ink_sac"),
     "cooldown": ("apothic_attributes:cooldown_reduction", ADD, 0.01, 0.04, "pct", "Cooldown Reduction", "minecraft:clock"),
     "magic_resistance": ("puffish_attributes:magic_resistance", MB, 0.02, 0.06, "pct", "Magic Damage Resistance", "minecraft:purple_dye"),
     "fire_damage": ("apothic_attributes:fire_damage", ADD, 0.5, 2, "flat", "Fire Damage", "minecraft:fire_charge"),
@@ -146,17 +155,17 @@ CLASSES = ["fire", "frost", "priest", "paladin", "warrior", "rogue", "archer", "
 # Region between CLASSES[i] and CLASSES[i+1]:
 # name, small stats (cycled over the lattice), notables [(title, [stats])], keystones, weapon roots
 REGIONS = [
-    ("Elements", ["spell_fire", "spell_frost", "fire_damage", "cold_damage", "spell_all"],
+    ("Elements", ["spell_fire", "spell_frost", "fire_damage", "cold_damage", "spell_all", "max_mana"],
      [("Kindling", ["spell_fire", "fire_damage"]), ("Rime", ["spell_frost", "cold_damage"]),
-      ("Elemental Mastery", ["spell_fire", "spell_frost", "spell_all"])],
+      ("Elemental Mastery", ["spell_fire", "spell_frost", "mana_regen"])],
      ["glass_cannon"], ["weapon_fire_root", "weapon_frost_root"]),
     ("Vitality", ["life_steal", "overheal", "reflection", "resistance", "healing_received"],
      [("Leech", ["life_steal", "overheal"]), ("Thorns", ["reflection", "resistance"]),
       ("Second Wind", ["healing_received", "overheal"])],
      ["bloodthirst", "lifeweaver"], ["weapon_axe_root", "weapon_double_axe_root"]),
-    ("Devotion", ["healing_power", "healing_received", "resistance", "armor", "spell_all"],
+    ("Devotion", ["healing_power", "healing_received", "resistance", "armor", "spell_all", "mana_regen"],
      [("Sanctuary", ["healing_power", "healing_received"]), ("Bulwark", ["resistance", "armor"]),
-      ("Faith", ["healing_power", "spell_all"])],
+      ("Faith", ["healing_power", "spell_all", "max_mana"])],
      ["unshakeable"], ["weapon_holy_root", "weapon_mace_root"]),
     ("Might", ["attack_damage", "armor", "toughness", "knockback", "sword_damage", "axe_damage", "mace_damage"],
      [("Brute Force", ["attack_damage", "knockback"]), ("Iron Skin", ["armor", "toughness"]),
@@ -174,11 +183,14 @@ REGIONS = [
      [("Beastmaster", ["tamed_damage", "tamed_resistance"]), ("Ranger's Stride", ["mount_speed", "jump", "fall_safety"]),
       ("Shadow", ["stealth", "move_speed"])],
      ["pack_leader"], ["weapon_spear_root", "weapon_sickle_root"]),
-    ("Arcana", ["spell_arcane", "spell_haste", "cooldown", "magic_resistance", "spell_all"],
-     [("Arcane Focus", ["spell_arcane", "spell_all"]), ("Quickening", ["spell_haste", "cooldown"]),
-      ("Warding", ["magic_resistance", "spell_arcane"])],
+    ("Arcana", ["spell_arcane", "spell_haste", "cooldown", "magic_resistance", "spell_all", "max_mana", "mana_regen"],
+     [("Arcane Focus", ["spell_arcane", "spell_all"]), ("Quickening", ["spell_haste", "cooldown", "mana_regen"]),
+      ("Warding", ["magic_resistance", "max_mana"])],
      ["spellblade"], ["weapon_arcane_root", "weapon_glaive_root"]),
 ]
+
+# Max mana added to each "_boost" skill of these class branches (gameoverse-mana, 2026-09-30).
+CLASS_BOOST_MANA = {"fire": 10, "frost": 10, "arcane": 10, "priest": 10, "paladin": 5}
 
 CRAFT_STATS = ["fortune", "pickaxe_speed", "axe_speed", "shovel_speed", "mining_efficiency", "repair_cost",
                "xp_gained", "luck"]
@@ -385,6 +397,9 @@ def class_cores(tree):
     roots = {s["definition"] for s in skills.values() if s.get("root")}
     for did, d in defs.items():
         d = {k: v for k, v in d.items() if k != "metadata"}
+        mana = CLASS_BOOST_MANA.get(did.split("_")[0]) if did.endswith("_boost") else None
+        if mana:
+            d = dict(d, rewards=list(d.get("rewards", [])) + [attribute("manaattributes:max_mana", mana, ADD)])
         if did in roots:
             d = dict(d, rewards=list(d.get("rewards", [])) + [class_book_reward(did)])
         tree.define("c_" + did, with_resolvable_type(d))
