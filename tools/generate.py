@@ -308,13 +308,22 @@ def text(s):
     return {"text": s}
 
 
+# Icons: textures from the Gameoverse-Skill-Forest-Icons resource pack (built by the unpublished
+# mod-dev/gameoverse-skill-forest-icons, art by Quintino Pixels); the last STATS field is only a fallback note.
+ICON_DIR = "gameoverse_skill_forest:textures/gui/icons/"
+
+
+def tex(name):
+    return {"type": "texture", "data": {"texture": f"{ICON_DIR}{name}.png"}}
+
+
 def small_def(tree, stat):
     did = "s_" + stat
     name = STATS[stat][5]
     tree.define(did, {
         "title": text(name),
         "description": text(fmt(stat)),
-        "icon": {"type": "item", "data": {"item": STATS[stat][6]}},
+        "icon": tex(stat),
         "frame": "task",
         "rewards": rewards_for([stat]),
     })
@@ -326,7 +335,7 @@ def notable_def(tree, key, title, stats, icon=None):
     tree.define(did, {
         "title": text(title),
         "description": text("\n".join(fmt(s, True) for s in stats)),
-        "icon": {"type": "item", "data": {"item": icon or STATS[stats[0]][6]}},
+        "icon": {"type": "item", "data": {"item": icon}} if icon else tex(stats[0]),
         "frame": "goal",
         "size": 1.25,
         "rewards": rewards_for(stats, True),
@@ -345,7 +354,7 @@ def keystone_def(tree, key):
         "title": text(title),
         "description": text("\n".join(lines)),
         "extra_description": text(" ".join(extra)),
-        "icon": {"type": "item", "data": {"item": icon}},
+        "icon": tex("keystone_" + key),
         "frame": "challenge",
         "size": 1.6,
         "required_spent_points": KEYSTONE_SPENT,
@@ -593,7 +602,7 @@ def build():
             "title": text("Endless Rim"),
             "description": text(fmt(s)),
             "extra_description": text(f"Needs {RIM_SPENT} points spent in the forest."),
-            "icon": {"type": "item", "data": {"item": STATS[s][6]}},
+            "icon": tex(s),
             "frame": "task",
             "required_spent_points": RIM_SPENT,
             "rewards": rewards_for([s]),
@@ -625,10 +634,18 @@ def validate(tree, attrs, spells):
     for a, b in tree.normal | tree.exclusive:
         if a not in tree.skills or b not in tree.skills:
             raise SystemExit(f"link to a missing skill: {a} - {b}")
+    icons = os.path.join(ROOT, "..", "gameoverse-skill-forest-icons", "resourcepack")
+    if not os.path.isdir(icons):
+        print("note: gameoverse-skill-forest-icons not built here, icon textures not checked")
     for did, d in tree.defs.items():
         for key in ("title", "icon"):
             if key not in d:
                 raise SystemExit(f"{did}: no {key}")
+        t = d["icon"]["data"].get("texture", "")
+        if t.startswith(ICON_DIR) and os.path.isdir(icons):
+            ns, path = t.split(":", 1)
+            if not os.path.isfile(os.path.join(icons, "assets", ns, path)):
+                raise SystemExit(f"{did}: icon {t} is not in the icons resource pack")
         for rw in d.get("rewards", []):
             t, data = rw["type"], rw.get("data", {})
             if t in ("puffish_skills:attribute", "skill_tree_rpgs:conditional_attribute"):
@@ -747,7 +764,7 @@ def main():
     write("data/skill_tree_rpgs/puffish_skills/config.json", {"version": 3, "categories": []})
     write(CAT_DIR + "/category.json", {
         "title": text("Skill Forest"),
-        "icon": {"type": "item", "data": {"item": "minecraft:oak_sapling"}},
+        "icon": tex("tab"),
         "background": {"texture": "skill_tree_rpgs:textures/gui/background_6_b.png", "width": 768, "height": 463,
                        "position": "fill"},
         "unlocked_by_default": True,

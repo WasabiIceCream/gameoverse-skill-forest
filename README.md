@@ -39,3 +39,10 @@ Needs: Pufferfish's Skills, Skill Tree, Spell Engine, Trinkets (Updated), option
 `puffishSkillsTreeBlacklist`.
 
 MIT licensed (our code and generator).
+
+## Icons (2026-10-01)
+
+Stat, notable, keystone, Endless Rim and tab icons are textures (`gameoverse_skill_forest:textures/gui/icons/...`) from
+the Gameoverse-Skill-Forest-Icons resource pack, built by the unpublished `mod-dev/gameoverse-skill-forest-icons` (third
+party art, not in this repo). The generator checks every icon path against that pack when it's next to this project.
+Skill Tree's class and weapon nodes keep Skill Tree's own icons.
