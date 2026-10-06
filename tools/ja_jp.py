@@ -25,7 +25,7 @@ STAT_NAMES = {
     "Damage Resistance": "ダメージ耐性",
     "Dodge Chance": "回避率",
     "Draw Speed": "引き絞り速度",
-    "Experience Gained": "経験値取得量",
+    "Experience Gained": "経験値取得倍率",
     "Fire Damage": "火属性ダメージ",
     "Fire Spell Power": "炎の呪文威力",
     "Fortune": "幸運",
