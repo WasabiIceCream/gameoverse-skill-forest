@@ -17,6 +17,7 @@ Pufferfish's Skills load no tabs at all. Re-run after Skill Tree, Apotheosis or 
     python3 tools/generate.py
 """
 import glob
+import hashlib
 import json
 import math
 import os
@@ -28,6 +29,8 @@ ROOT = os.path.dirname(HERE)
 SERVER = os.path.join(ROOT, "..", "..", "fabric 26.1")
 MODS = os.path.join(SERVER, "mods")
 OUT = os.path.join(ROOT, "datapack")
+# Japanese for the generated text, collected into the Gameoverse-Translations resource pack
+LANG_OUT = os.path.join(ROOT, "lang", "ja_jp.json")
 CAT_DIR = "data/gameoverse/puffish_skills/categories/forest"
 CATEGORY = "gameoverse:forest"
 
@@ -304,8 +307,16 @@ def polar(r, deg):
     return r * math.cos(a), r * math.sin(a)
 
 
+from ja_jp import to_ja
+
+LANG = {}
+
+
 def text(s):
-    return {"text": s}
+    # a translate key with the English as fallback; the key follows the English, so a changed line needs new Japanese
+    key = "gameoverse_skill_forest.text." + hashlib.sha1(s.encode()).hexdigest()[:12]
+    LANG[key] = to_ja(s)
+    return {"translate": key, "fallback": s}
 
 
 # Icons: textures from the Gameoverse-Skill-Forest-Icons resource pack (built by the unpublished
@@ -777,6 +788,10 @@ def main():
         "exclusive": {"bidirectional": sorted(list(p) for p in tree.exclusive)},
     })
     write(CAT_DIR + "/experience.json", experience())
+    os.makedirs(os.path.dirname(LANG_OUT), exist_ok=True)
+    with open(LANG_OUT, "w", encoding="utf-8") as f:
+        json.dump(dict(sorted(LANG.items())), f, ensure_ascii=False, indent=2)
+        f.write("\n")
     # Orb of Oblivion: a mid-game recipe
     write("data/skill_tree_rpgs/recipe/orb_of_oblivion.json", {
         "type": "minecraft:crafting_shaped", "category": "equipment",
